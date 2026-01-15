@@ -2,83 +2,121 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# 1. CONFIGURAÇÃO DE SEGURANÇA
-st.set_page_config(page_title="IA-SENTINELA | EQI", layout="wide")
+# 1. CONFIGURAÇÃO DE SEGURANÇA E TELA
+st.set_page_config(page_title="IA-SENTINELA | EQI PRO", layout="wide")
 
-# 2. ESTILO VISUAL (CSS) - SIMPLIFICADO PARA MOBILE
+# 2. ESTILO VISUAL (CSS) - INCLUINDO O NOVO MÓDULO DE RELATÓRIO PDF
 st.markdown("""
 <style>
     [data-testid="stHeader"] {display: none;}
-    .bloco-branco {
-        background-color: white;
-        color: black;
-        padding: 20px;
-        border-radius: 10px;
-        border-top: 8px solid #1e3a8a;
-        margin-bottom: 10px;
+    
+    /* Moldura estilo Dossiê PDF */
+    .pdf-preview { 
+        background: white; 
+        color: #1a1a1a; 
+        padding: 30px; 
+        border-radius: 8px; 
+        font-family: 'Courier New', monospace; 
+        font-size: 0.9rem; 
+        border-top: 15px solid #1e3a8a;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        line-height: 1.4;
+        margin-top: 20px;
     }
-    .tabela-container {
-        background-color: white !important;
-        padding: 10px;
-        border-radius: 5px;
+    
+    /* Ajuste para as métricas no Dashboard */
+    .stMetric { 
+        background-color: #161b22; 
+        border-radius: 10px; 
+        padding: 15px; 
+        border: 1px solid #30363d; 
     }
 </style>
 """, unsafe_allow_html=True)
 
 # 3. CABEÇALHO FIXO
-st.title("🛡️ SISTEMA IA-SENTINELA")
+st.title("🛡️ SISTEMA IA-SENTINELA PRO")
 st.write(f"**Gestor Responsável:** Sidney Almeida | EQI 2026")
 
-aba1, aba2, aba3 = st.tabs(["⚙️ AJUSTES", "📊 DASHBOARD", "📄 RELATÓRIO"])
+# --- 🧠 BASE DE DADOS SINCRONIZADA POR LÍDERES ---
+dados_lideres = {
+    "LIDERANÇA ALPHA": {"valor": 16000.0, "risco": 32, "status": "entra"},
+    "LIDERANÇA BRAVO": {"valor": 22500.0, "risco": 45, "status": "vácuo"},
+    "LIDERANÇA CHARLIE": {"valor": 45000.0, "risco": 18, "status": "não entra"}
+}
 
-# 4. ENTRADA DE DADOS (PROTEÇÃO CONTRA ERROS NUMÉRICOS)
-if 'v_invest' not in st.session_state: st.session_state.v_invest = 5000.0
-if 'v_custo' not in st.session_state: st.session_state.v_custo = 25.0
+lider_sel = st.selectbox("Selecione o Líder para Auditoria:", list(dados_lideres.keys()))
+info = dados_lideres[lider_sel]
+
+# --- 📈 CÁLCULOS DINÂMICOS ---
+p_risco = info["risco"]
+p_ok = 100 - p_risco
+v_liberado = info["valor"] * (p_ok / 100)
+v_pendente = info["valor"] * (p_risco / 100)
+
+aba1, aba2, aba3 = st.tabs(["📊 DASHBOARD", "📈 GRÁFICO", "📄 RELATÓRIO (DOSSIÊ)"])
 
 with aba1:
-    st.session_state.v_invest = float(st.number_input("Investimento Total (R$)", value=float(st.session_state.v_invest), step=500.0))
-    st.session_state.v_custo = float(st.number_input("Custo por Lead (R$)", value=float(st.session_state.v_custo), step=1.0))
-    leads_totais = st.session_state.v_invest / st.session_state.v_custo
-
-# 5. CÁLCULO DAS PROJEÇÕES (DIDÁTICA SOLICITADA)
-# Status: entra, vácuo, não entra
-fases = ["1. Início de Captação", "2. Escala Operacional", "3. Expansão Sentinela", "4. Consolidação"]
-valores = [st.session_state.v_invest * 0.2, st.session_state.v_invest * 0.5, st.session_state.v_invest * 0.8, st.session_state.v_invest]
-leads_fase = [int(leads_totais * 0.2), int(leads_totais * 0.5), int(leads_totais * 0.8), int(leads_totais)]
-status_fase = ["entra", "entra", "vácuo", "não entra"]
-
-df_favelinha = pd.DataFrame({
-    "Fase Estratégica": fases,
-    "Investimento (R$)": [f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") for x in valores],
-    "Leads": leads_fase,
-    "Status": status_fase
-})
-
-with aba2:
-    c1, c2, c3 = st.columns(3)
-    c1.metric("TOTAL DE LEADS", f"{int(leads_totais)}")
-    c2.metric("LIBERADO (100%)", "OPERACIONAL")
-    c3.metric("PENDENTE (0%)", "AÇÃO IMEDIATA")
+    st.markdown(f"**Análise de Desempenho: {lider_sel}**")
+    c1, c2 = st.columns(2)
+    # Títulos agora são os percentuais conforme regra de ouro
+    c1.metric(f"LIBERADO ({p_ok}%)", f"R$ {v_liberado:,.2f}")
+    c2.metric(f"PENDENTE ({p_risco}%)", f"R$ {v_pendente:,.2f}", delta=f"-{p_risco}%", delta_color="inverse")
+    
     st.divider()
-    st.line_chart(pd.DataFrame({"Leads": leads_fase}, index=fases))
-
-with aba3:
-    # CABEÇALHO DO RELATÓRIO (BLOCO 1)
-    st.markdown(f"""
-    <div class="bloco-branco">
-        <h2 style="color: #1e3a8a; margin: 0;">RELATÓRIO DE AUDITORIA</h2>
-        <p style="margin: 5px 0;"><b>Emissor:</b> Sidney Almeida | <b>Data:</b> {datetime.now().strftime('%d/%m/%Y')}</p>
-        <p style="margin: 5px 0;"><b>Aporte Identificado:</b> R$ {st.session_state.v_invest:,.2f}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # TABELA DA FAVELINHA (BLOCO 2 - FORA DO HTML PARA NÃO CORTAR)
-    st.write("### 📝 Tabela da Favelinha (Projeção)")
+    st.write("### 📝 Tabela da Favelinha (Liderança)")
+    df_favelinha = pd.DataFrame({
+        "Indicador": ["Faturamento Total", "Volume Liberado", "Volume Pendente", "Status Sentinela"],
+        "Dados": [f"R$ {info['valor']:,.2f}", f"R$ {v_liberado:,.2f}", f"R$ {v_pendente:,.2f}", info['status'].upper()]
+    })
     st.table(df_favelinha)
 
-    # LEGENDA E BOTÃO (BLOCO 3)
-    st.info(f"💡 **IA-SENTINELA:** O status 'vácuo' identifica a zona de morte monitorada.")
-    
-    csv = df_favelinha.to_csv(index=False).encode('utf-8-sig')
-    st.download_button("📥 BAIXAR RELATÓRIO COMPLETO", csv, "Auditoria_Sidney.csv", "text/csv")
-    
+with aba2:
+    st.markdown("<h4 style='text-align: center;'>Distribuição de Auditoria</h4>", unsafe_allow_html=True)
+    df_p = pd.DataFrame({'Status': [f'{p_ok}%', f'{p_risco}%'], 'Perc': [p_ok, p_risco]})
+    st.vega_lite_chart(df_p, {
+        'width': 'container', 'height': 300,
+        'mark': {'type': 'arc', 'innerRadius': 80, 'outerRadius': 120},
+        'encoding': {
+            'theta': {'field': 'Perc', 'type': 'quantitative'},
+            'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#00d4ff', '#ff4b4b']}}
+        }
+    })
+
+with aba3:
+    # --- IMPLANTAÇÃO DA ESTRUTURA DE RELATÓRIO DO CÓDIGO ANTERIOR ---
+    if st.button("🔄 GERAR DOSSIÊ CONSOLIDADO"):
+        
+        # Montagem do texto do Dossiê
+        relatorio_texto = (
+            "==========================================\n"
+            "   DOSSIÊ DE AUDITORIA - IA-SENTINELA PRO \n"
+            "==========================================\n"
+            f"LIDERANÇA RESP. : {lider_sel}\n"
+            f"DATA EMISSÃO    : {datetime.now().strftime('%d/%m/%Y')}\n"
+            "------------------------------------------\n"
+            f"Faturamento Total  : R$ {info['valor']:,.2f}\n"
+            f"Percentual Correto : {p_ok}% (R$ {v_liberado:,.2f})\n"
+            f"Percentual Risco   : {p_risco}% (R$ {v_pendente:,.2f})\n"
+            "------------------------------------------\n"
+            f"MOTIVO PRINCIPAL   : Análise de Fluxo Sentinela\n"
+            f"STATUS IA-SENTINELA: {info['status'].upper()}\n"
+            "==========================================\n"
+        )
+        
+        # Renderização visual estilo PDF (Fundo Branco/Letra Preta)
+        st.markdown(f"""
+        <div class="pdf-preview">
+            <pre style="white-space: pre-wrap; color: #1a1a1a; background: transparent; border: none;">{relatorio_texto}</pre>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Botão de Download Sincronizado
+        st.download_button(
+            label="📥 BAIXAR RELATÓRIO OFICIAL (.TXT)",
+            data=relatorio_texto.encode('utf-8-sig'),
+            file_name=f"Dossie_{lider_sel.replace(' ', '_')}.txt",
+            mime="text/plain"
+        )
+
+st.info("💡 **IA-SENTINELA:** O status 'vácuo' identifica a zona de morte monitorada pela Sentinela.")
