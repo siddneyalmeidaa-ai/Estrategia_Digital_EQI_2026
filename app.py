@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# CONFIGURAÇÃO PADRÃO OURO - IA-SENTINELA 2026
+# 1. CONFIGURAÇÃO PADRÃO OURO - IA-SENTINELA 2026
 st.set_page_config(page_title="IA-SENTINELA | SIDNEY ALMEIDA", layout="wide")
 
-# ESTÉTICA PREMIUM E CORREÇÃO DE VISIBILIDADE
+# 2. BANDA DE BLINDAGEM E ESTÉTICA PDF (CSS CORRIGIDO)
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -13,23 +13,47 @@ st.markdown("""
     header {visibility: hidden;}
     [data-testid="stHeader"] {display: none;}
     
-    /* Garante que os números e textos apareçam no modo escuro/claro */
-    .stMetric { background-color: #161b22; border-radius: 10px; padding: 15px; border: 1px solid #30363d; color: white !important; }
-    
-    /* ESTÉTICA DO RELATÓRIO PDF NO FRONT */
-    .pdf-frame {
+    /* Estilo das Métricas */
+    .stMetric { 
+        background-color: #161b22; 
+        border-radius: 10px; 
+        padding: 15px; 
+        border: 1px solid #30363d; 
+    }
+
+    /* MOLDURA DO RELATÓRIO PDF */
+    .pdf-box {
         background-color: white;
         color: #1a1a1a;
         padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        border-radius: 5px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         margin-bottom: 20px;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: 'Arial', sans-serif;
         border-top: 15px solid #1e3a8a;
     }
     .pdf-header { border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
-    .pdf-title { color: #1e3a8a; font-size: 24px; font-weight: bold; text-transform: uppercase; }
+    .pdf-title { color: #1e3a8a; font-size: 22px; font-weight: bold; }
     
-    /* Forçar a tabela a respeitar o fundo branco do PDF */
-    div[data-testid
+    /* Forçar visibilidade da tabela no fundo branco */
+    .stTable { background-color: white !important; color: black !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# 3. CABEÇALHO FIXO
+st.title("🛡️ SISTEMA IA-SENTINELA")
+st.subheader("Gestor Responsável: Sidney Almeida | EQI 2026")
+
+# 4. NAVEGAÇÃO POR ABAS
+aba_filtro, aba_dash, aba_relatorio = st.tabs(["⚙️ FILTROS", "📊 DASHBOARD", "📄 RELATÓRIO PDF"])
+
+# Inicialização de valores para evitar erro de tipo
+if 'investimento' not in st.session_state:
+    st.session_state.investimento = 5000.0
+if 'custo_lead' not in st.session_state:
+    st.session_state.custo_lead = 25.0
+
+with aba_filtro:
+    st.info("Configure os valores para atualizar a auditoria.")
+    st.
     
