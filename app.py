@@ -5,18 +5,15 @@ from datetime import datetime
 # CONFIGURAÇÃO PADRÃO OURO - IA-SENTINELA 2026
 st.set_page_config(page_title="IA-SENTINELA | SIDNEY ALMEIDA", layout="wide")
 
-# BANDA DE BLINDAGEM REVISADA (Esconde menus, mas MANTÉM OS DADOS VISÍVEIS)
+# BANDA DE BLINDAGEM REVISADA (Esconde menus, mantém dados visíveis)
 st.markdown("""
     <style>
-    /* Oculta apenas elementos de edição e menus superiores */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     [data-testid="stHeader"] {display: none;}
     
-    /* Garante que o conteúdo principal e métricas fiquem visíveis */
-    .main .block-container {padding-top: 2rem;}
-    .stMetric { background-color: #161b22; border-radius: 10px; padding: 15px; border: 1px solid #30363d; opacity: 1 !important; }
+    .stMetric { background-color: #161b22; border-radius: 10px; padding: 15px; border: 1px solid #30363d; }
     
     /* ESTÉTICA PDF NO FRONT-END */
     .pdf-container {
@@ -25,7 +22,7 @@ st.markdown("""
         padding: 25px;
         border-radius: 4px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        margin-top: 10px;
+        margin-bottom: 20px;
         font-family: 'Arial', sans-serif;
         border-top: 10px solid #1e3a8a;
     }
@@ -33,7 +30,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# CABEÇALHO FIXO (Garante que seu nome sempre apareça)
+# CABEÇALHO FIXO
 st.title("🛡️ SISTEMA IA-SENTINELA")
 st.subheader("Gestor Responsável: Sidney Almeida | EQI 2026")
 
@@ -44,7 +41,7 @@ aba_filtro, aba_dash, aba_relatorio = st.tabs([
     "📄 PRÉVIA RELATÓRIO"
 ])
 
-# Inicialização de valores
+# Inicialização de valores (Corrigindo erro de tipos mistos)
 if 'investimento' not in st.session_state:
     st.session_state.investimento = 5000.0
 if 'custo_lead' not in st.session_state:
@@ -52,11 +49,14 @@ if 'custo_lead' not in st.session_state:
 
 with aba_filtro:
     st.info("Ajuste os valores abaixo para atualizar os dados de captação.")
-    st.session_state.investimento = st.number_input("Valor de Investimento (R$)", value=st.session_state.investimento, step=500.0)
-    st.session_state.custo_lead = st.number_input("Custo por Lead (R$)", value=st.session_state.custo_lead, step=1.0)
+    # Garantindo que os inputs sejam float para evitar o erro de 'Mixed Types'
+    st.session_state.investimento = float(st.number_input("Valor de Investimento (R$)", value=float(st.session_state.investimento), step=500.0))
+    st.session_state.custo_lead = float(st.number_input("Custo por Lead (R$)", value=float(st.session_state.custo_lead), step=1.0))
+    
+    # Cálculo base
     leads_totais = st.session_state.investimento / st.session_state.custo_lead
 
-# CÁLCULO DA PROJEÇÃO E TERMINOLOGIA (vácuo)
+# LÓGICA DE DADOS E TERMINOLOGIA (vácuo)
 df_base = pd.DataFrame({
     'Rodada': ['R1', 'R2', 'R3', 'R4'],
     'Projeção': [leads_totais*0.2, leads_totais*0.5, leads_totais*0.8, leads_totais],
@@ -94,11 +94,11 @@ with aba_relatorio:
     </div>
     """, unsafe_allow_html=True)
     
-    # Exibição da Tabela Formatada
+    # Exibição da Tabela Formatada (Status: entra, vácuo, não entra)
     st.table(df_final)
     
     st.divider()
-    # Botão de Download Configurado
+    # Botão de Download
     csv = df_final.to_csv(index=False).encode('utf-8-sig')
     st.download_button(
         label="📥 BAIXAR RELATÓRIO COMPLETO",
