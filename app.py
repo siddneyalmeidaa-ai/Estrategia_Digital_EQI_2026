@@ -18,13 +18,30 @@ st.markdown("""
     .pdf-container {
         background-color: white;
         color: #1a1a1a;
-        padding: 40px;
-        border-radius: 2px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        margin: 20px auto;
-        max-width: 850px;
+        padding: 30px;
+        border-radius: 5px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        margin-bottom: 20px;
         font-family: 'Arial', sans-serif;
-        border-top: 12px solid #1e3a8a;
+        border-left: 10px solid #1e3a8a;
     }
-    .pdf-header { border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 25px; }
+    .pdf-header { border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 20px; }
+    .pdf-title { color: #1e3a8a; font-size: 22px; font-weight: bold; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# CABEÇALHO DO SISTEMA
+st.title("🛡️ SISTEMA IA-SENTINELA")
+st.subheader("Gestor Responsável: Sidney Almeida | EQI 2026")
+
+# ABAS DO SISTEMA
+aba_filtro, aba_dash, aba_relatorio = st.tabs([
+    "⚙️ FILTROS", 
+    "📊 DASHBOARD", 
+    "📄 PRÉVIA RELATÓRIO"
+])
+
+# Inicialização de variáveis
+if 'investimento' not in st.session_state:
+    st.session_state.investimento = 5
     
